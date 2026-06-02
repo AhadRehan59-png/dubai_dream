@@ -4,6 +4,10 @@
   "buildCommand": "npm run vercel-build",
   "builds": [
     {
+      "src": "api/health.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/index.ts",
       "use": "@vercel/node",
       "config": {
@@ -12,6 +16,10 @@
     }
   ],
   "routes": [
+    {
+      "src": "/health",
+      "dest": "/api/health.ts"
+    },
     {
       "src": "/(.*)",
       "dest": "/api/index.ts"
