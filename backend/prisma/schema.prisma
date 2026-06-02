@@ -1,0 +1,147 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum DrawStatus {
+  ACTIVE
+  SOLD_OUT
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          Role      @default(USER)
+  walletBalance Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  tokens        Token[]
+  payments      Payment[]
+  wonDraws      Draw[]    @relation("DrawWinner")
+}
+
+model Category {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  name        String          @unique
+  slug        String          @unique
+  description String?
+  icon        String?
+  sortOrder   Int             @default(0)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  draws       Draw[]
+  images      CategoryImage[]
+}
+
+model CategoryImage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId String   @db.ObjectId
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  url        String
+  sortOrder  Int      @default(0)
+}
+
+model Draw {
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  campaignCode     String     @unique
+  title            String
+  description      String
+  prizeValue       Float
+  prizeCurrency    String     @default("AED")
+  tokenPrice       Float
+  totalTokens      Int
+  soldTokens       Int        @default(0)
+  imageUrl         String
+  badge            String?
+  ticketMultiplier Int        @default(1)
+  drawDate         DateTime
+  endDate          DateTime
+  status           DrawStatus @default(ACTIVE)
+  winnerTokenId    String?
+  winnerId         String?    @db.ObjectId
+  winner           User?      @relation("DrawWinner", fields: [winnerId], references: [id])
+  drawSeed         String?
+  drawnAt          DateTime?
+  categoryId       String     @db.ObjectId
+  category         Category   @relation(fields: [categoryId], references: [id])
+  images           DrawImage[]
+  tokens           Token[]
+  payments         Payment[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model DrawImage {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  drawId    String @db.ObjectId
+  draw      Draw   @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int    @default(0)
+}
+
+model Token {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tokenNumber String   @unique
+  drawId      String   @db.ObjectId
+  draw        Draw     @relation(fields: [drawId], references: [id])
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  paymentId   String?  @db.ObjectId
+  payment     Payment? @relation(fields: [paymentId], references: [id])
+  purchasedAt DateTime @default(now())
+}
+
+model Payment {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  user            User          @relation(fields: [userId], references: [id])
+  drawId          String        @db.ObjectId
+  draw            Draw          @relation(fields: [drawId], references: [id])
+  amount          Float
+  currency        String        @default("AED")
+  quantity        Int           @default(1)
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  transactionRef  String?
+  payerPhone      String?
+  stripeSessionId String?
+  stripePaymentId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  tokens          Token[]
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  sentVia   String   @default("email")
+  createdAt DateTime @default(now())
+}
