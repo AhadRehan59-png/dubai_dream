@@ -9,12 +9,11 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "build": "prisma generate",
-    "vercel-build": "prisma generate && echo Build OK",
+    "vercel-build": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx src/scripts/seed.ts",
-    "db:mongo:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-mongodb-replica.ps1",
-    "postinstall": "prisma generate"
+    "db:mongo:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-mongodb-replica.ps1"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
