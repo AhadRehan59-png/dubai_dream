@@ -1,11 +1,8 @@
 import bcrypt from "bcryptjs";
-import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response } from "express";
 import { prisma } from "./prisma";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-change-me"
-);
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-change-me";
 
 export interface SessionUser {
   id: string;
@@ -27,6 +24,9 @@ export async function verifyPassword(
 }
 
 export async function createSession(user: SessionUser): Promise<string> {
+  const { SignJWT } = await import("jose");
+  const secret = new TextEncoder().encode(JWT_SECRET);
+
   return new SignJWT({
     id: user.id,
     email: user.email,
@@ -37,7 +37,7 @@ export async function createSession(user: SessionUser): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("7d")
     .setIssuedAt()
-    .sign(JWT_SECRET);
+    .sign(secret);
 }
 
 export async function getSessionFromRequest(
@@ -47,7 +47,9 @@ export async function getSessionFromRequest(
   if (!token) return null;
 
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { jwtVerify } = await import("jose");
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
     return payload as unknown as SessionUser;
   } catch {
     return null;
