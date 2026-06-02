@@ -8,8 +8,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "build": "echo no-build",
-    "vercel-build": "echo Vercel build OK",
+    "build": "prisma generate",
+    "vercel-build": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx src/scripts/seed.ts",
