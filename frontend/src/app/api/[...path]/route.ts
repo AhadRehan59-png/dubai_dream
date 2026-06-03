@@ -8,6 +8,8 @@ function getBackendUrl() {
   );
 }
 
+export const dynamic = "force-dynamic";
+
 async function proxyRequest(
   req: NextRequest,
   context: { params: Promise<{ path: string[] }> }

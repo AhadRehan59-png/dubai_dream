@@ -16,7 +16,16 @@ interface HomeData {
 }
 
 export default async function HomePage() {
-  const { draws, stats } = await apiFetchJson<HomeData>("/api/home");
+  let draws: HomeDraw[] = [];
+  let stats = { totalWinners: 0, totalDraws: 0, totalTokens: 0 };
+
+  try {
+    const data = await apiFetchJson<HomeData>("/api/home");
+    draws = data.draws;
+    stats = data.stats;
+  } catch {
+    // Backend unavailable — show empty state instead of crashing the page.
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
