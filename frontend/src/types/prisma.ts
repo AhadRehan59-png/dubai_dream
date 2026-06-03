@@ -1,64 +1,122 @@
-import type { Prisma } from "@prisma/client";
+export type Role = "USER" | "ADMIN";
+export type DrawStatus = "ACTIVE" | "SOLD_OUT" | "COMPLETED" | "CANCELLED";
+export type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
 
-export type Category = Prisma.CategoryGetPayload<Record<string, never>>;
-export type Draw = Prisma.DrawGetPayload<Record<string, never>>;
-export type Token = Prisma.TokenGetPayload<Record<string, never>>;
-export type Payment = Prisma.PaymentGetPayload<Record<string, never>>;
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
 
-export type DrawWithCategory = Prisma.DrawGetPayload<{
-  include: { category: true };
-}>;
+export interface CategoryImage {
+  id: string;
+  categoryId: string;
+  url: string;
+  sortOrder: number;
+}
 
-export type DrawWithCategoryAndImages = Prisma.DrawGetPayload<{
-  include: { category: true; images: { orderBy: { sortOrder: "asc" } } };
-}>;
+export interface Draw {
+  id: string;
+  campaignCode: string;
+  title: string;
+  description: string;
+  prizeValue: number;
+  prizeCurrency: string;
+  tokenPrice: number;
+  totalTokens: number;
+  soldTokens: number;
+  imageUrl: string;
+  badge: string | null;
+  ticketMultiplier: number;
+  drawDate: string | Date;
+  endDate: string | Date;
+  status: DrawStatus;
+  winnerTokenId: string | null;
+  winnerId: string | null;
+  drawSeed: string | null;
+  drawnAt: string | Date | null;
+  categoryId: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
 
-export type DrawWithCategoryAndCount = Prisma.DrawGetPayload<{
-  include: { category: true; _count: { select: { tokens: true } } };
-}>;
+export interface DrawImage {
+  id: string;
+  drawId: string;
+  url: string;
+  sortOrder: number;
+}
 
-export type CompletedDrawWithWinner = Prisma.DrawGetPayload<{
-  include: {
-    category: true;
-    winner: { select: { firstName: true; lastName: true } };
-  };
-}>;
+export interface Token {
+  id: string;
+  tokenNumber: string;
+  drawId: string;
+  userId: string;
+  paymentId: string | null;
+  purchasedAt: string | Date;
+}
 
-export type CategoryWithGalleryAndDraws = Prisma.CategoryGetPayload<{
-  include: {
-    images: { orderBy: { sortOrder: "asc" } };
-    draws: {
-      include: {
-        category: true;
-        images: { orderBy: { sortOrder: "asc" } };
-      };
-    };
-  };
-}>;
+export interface Payment {
+  id: string;
+  userId: string;
+  drawId: string;
+  amount: number;
+  currency: string;
+  quantity: number;
+  status: PaymentStatus;
+  paymentMethod: string | null;
+  transactionRef: string | null;
+  payerPhone: string | null;
+  stripeSessionId: string | null;
+  stripePaymentId: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
 
-export type CategoryWithDraws = Prisma.CategoryGetPayload<{
-  include: {
-    draws: { include: { category: true } };
-  };
-}>;
+export interface UserSummary {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+  createdAt: string | Date;
+}
 
-export type TokenWithDraw = Prisma.TokenGetPayload<{
-  include: { draw: { include: { category: true } } };
-}>;
+export type DrawWithCategory = Draw & { category: Category };
 
-export type PaymentWithDraw = Prisma.PaymentGetPayload<{
-  include: { draw: true };
-}>;
+export type DrawWithCategoryAndImages = DrawWithCategory & {
+  images: DrawImage[];
+};
 
-export type AdminUser = Prisma.UserGetPayload<{
-  select: {
-    id: true;
-    email: true;
-    firstName: true;
-    lastName: true;
-    role: true;
-    createdAt: true;
-  };
-}>;
+export type DrawWithCategoryAndCount = DrawWithCategory & {
+  _count: { tokens: number };
+};
 
-export type PrismaTransaction = Prisma.TransactionClient;
+export type CompletedDrawWithWinner = DrawWithCategory & {
+  winner: { firstName: string; lastName: string } | null;
+};
+
+export type CategoryWithGalleryAndDraws = Category & {
+  images: CategoryImage[];
+  draws: DrawWithCategoryAndImages[];
+};
+
+export type CategoryWithDraws = Category & {
+  draws: DrawWithCategory[];
+};
+
+export type TokenWithDraw = Token & {
+  draw: DrawWithCategory;
+};
+
+export type PaymentWithDraw = Payment & {
+  draw: Draw;
+};
+
+export type AdminUser = UserSummary;
