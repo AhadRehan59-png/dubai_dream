@@ -28,8 +28,14 @@ function LoginForm() {
         body: JSON.stringify({ email: email.trim().toLowerCase(), password: password.trim() }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(
+          (data && typeof data === "object" && "error" in data && typeof data.error === "string"
+            ? data.error
+            : null) || "Login failed"
+        );
+      }
 
       router.push(redirect);
       router.refresh();
