@@ -35,7 +35,7 @@ export default function Header({ user: initialUser }: HeaderProps) {
   }, [initialUser]);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { authenticated: false }))
       .then((data) => {
         if (data.authenticated && data.user) {

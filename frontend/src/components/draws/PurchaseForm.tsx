@@ -46,6 +46,7 @@ export default function PurchaseForm({
       const res = await fetch("/api/tokens/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ drawId, quantity, paymentMethod }),
       });
 
@@ -87,6 +88,7 @@ export default function PurchaseForm({
       const res = await fetch(`/api/payments/${paymentId}/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           transactionRef: paymentMethod === "bank_card"
             ? `CARD-${cardNumber.slice(-4)}`
